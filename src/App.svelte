@@ -13,16 +13,21 @@
     adc_state: {
       battery_ma: number
       battery_mv: number
+      ldo_inp_mv: number
       esp_vin_mv: number
       pressure_mv: number
     }
-    pwm_pct: number
     n_pulses: number
-    time_ms: number
+    time_sec: number
+  }
+
+  interface MessageBatch {
+    data: Message[]
+    time_sec: number
   }
 
   let last_values: Message[] = []
-  let chart_pwm_pct: LineChart
+  let chart_ldo_inp_mv: LineChart
   let chart_battery_ma: LineChart
   let chart_battery_mv: LineChart
   let chart_n_pulses: LineChart
@@ -30,7 +35,7 @@
   let chart_pressure_mv: LineChart
 
   function getLabel(msg: Message) {
-    return new Date(msg.time_ms)
+    return new Date(msg.time_sec)
       .toLocaleTimeString()
       .split(':')
       .filter((_, i) => i > 0)
@@ -42,7 +47,7 @@
       labels: [],
       series: [[]],
     }
-    chart_pwm_pct = new LineChart('#pwm_pct', default_data)
+    chart_ldo_inp_mv = new LineChart('#ldo_inp_mv', default_data)
     chart_battery_ma = new LineChart('#battery_ma', default_data)
     chart_battery_mv = new LineChart('#battery_mv', default_data)
     chart_n_pulses = new LineChart('#n_pulses', default_data)
@@ -51,35 +56,37 @@
   })
 
   client.on('message', (_topic: string, message: string) => {
-    const parsed = JSON.parse(message) as Message
-    parsed.time_ms = new Date().valueOf()
-    if (last_values.length > 24) last_values.shift()
-    last_values.push(parsed)
-    const labels = last_values.map(getLabel)
-    chart_pwm_pct.update({
-      labels,
-      series: [last_values.map((v) => v.pwm_pct)],
-    })
-    chart_battery_ma.update({
-      labels,
-      series: [last_values.map((v) => v.adc_state.battery_ma)],
-    })
-    chart_battery_mv.update({
-      labels,
-      series: [last_values.map((v) => v.adc_state.battery_mv)],
-    })
-    chart_n_pulses.update({
-      labels,
-      series: [last_values.map((v) => v.n_pulses)],
-    })
-    chart_esp_vin_mv.update({
-      labels,
-      series: [last_values.map((v) => v.adc_state.esp_vin_mv)],
-    })
-    chart_pressure_mv.update({
-      labels,
-      series: [last_values.map((v) => v.adc_state.pressure_mv / 100)],
-    })
+    const batch = JSON.parse(message) as MessageBatch
+    for (const parsed of batch.data) {
+      parsed.time_sec = new Date().valueOf()
+      if (last_values.length > 24) last_values.shift()
+      last_values.push(parsed)
+      const labels = last_values.map(getLabel)
+      chart_ldo_inp_mv.update({
+        labels,
+        series: [last_values.map((v) => v.adc_state.ldo_inp_mv)],
+      })
+      chart_battery_ma.update({
+        labels,
+        series: [last_values.map((v) => v.adc_state.battery_ma)],
+      })
+      chart_battery_mv.update({
+        labels,
+        series: [last_values.map((v) => v.adc_state.battery_mv)],
+      })
+      chart_n_pulses.update({
+        labels,
+        series: [last_values.map((v) => v.n_pulses)],
+      })
+      chart_esp_vin_mv.update({
+        labels,
+        series: [last_values.map((v) => v.adc_state.esp_vin_mv)],
+      })
+      chart_pressure_mv.update({
+        labels,
+        series: [last_values.map((v) => v.adc_state.pressure_mv / 100)],
+      })
+    }
   })
 </script>
 
@@ -92,10 +99,9 @@
   <section class="flex gap-2">
     <div class="flex flex-col flex-1">
       <h3 class="text-center">
-        <i>"Duty cycle"</i>
-         do PWM (%)
+        Tensão de entrada do LDO (mV)
       </h3>
-      <div class="ct-chart w-full h-56" id="pwm_pct" />
+      <div class="ct-chart w-full h-56" id="ldo_inp_mv" />
     </div>
     <div class="flex flex-col flex-1">
       <h3 class="text-center">Corrente de carregamento (mA)</h3>
@@ -105,9 +111,7 @@
 
   <section class="flex gap-2">
     <div class="flex flex-col flex-1">
-      <h3 class="text-center">
-        Pulsos do sensor de vazão
-      </h3>
+      <h3 class="text-center">Pulsos do sensor de vazão</h3>
       <div class="ct-chart w-full h-56" id="n_pulses" />
     </div>
     <div class="flex flex-col flex-1">
@@ -118,9 +122,7 @@
 
   <section class="flex gap-2">
     <div class="flex flex-col flex-1">
-      <h3 class="text-center">
-        Tensão de entrada no ESP (mV)
-      </h3>
+      <h3 class="text-center">Tensão de entrada no ESP (mV)</h3>
       <div class="ct-chart w-full h-56" id="esp_vin_mv" />
     </div>
     <div class="flex flex-col flex-1">
