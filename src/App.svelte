@@ -104,7 +104,7 @@
       <div class="ct-chart w-full h-56" id="ldo_inp_mv" />
     </div>
     <div class="flex flex-col flex-1">
-      <h3 class="text-center">Corrente de carregamento (mA)</h3>
+      <h3 class="text-center">Corrente de descarga (mA)</h3>
       <div class="ct-chart w-full h-56" id="battery_ma" />
     </div>
   </section>
