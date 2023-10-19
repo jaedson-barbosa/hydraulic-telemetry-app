@@ -90,8 +90,8 @@
   })
 </script>
 
-<main class="p-8 flex gap-8 flex-col">
-  <h1 class="text-3xl font-bold text-center">
+<main class="p-8 flex gap-2 flex-col">
+  <h1 class="text-3xl font-bold text-center mb-2">
     MONITORAMENTO DE PRESSÃO E VAZÃO UTILIZANDO INTERNET DAS COISAS E COMPUTAÇÃO
     EM NUVEM
   </h1>
@@ -129,6 +129,10 @@
       <h3 class="text-center">Corrente no sensor de pressão (mA)</h3>
       <div class="ct-chart w-full h-56" id="pressure_mv" />
     </div>
+  </section>
+
+  <section class="flex justify-center">
+    <a class="bg-red-500 font-bold text-xl uppercase py-4 px-8 rounded-lg text-white" href="http://54.80.140.156/result.json" download="dados.json">Baixar resultados</a>
   </section>
 </main>
 
